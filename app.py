@@ -139,9 +139,10 @@ if 'view' not in st.session_state:
 if 'affiliate_id' not in st.session_state:
     st.session_state.affiliate_id = None
 
-# Navigation
+# Navigation mit automatischem Rerun
 def navigate_to(view):
     st.session_state.view = view
+    st.rerun()
 
 # Logout
 def logout():
@@ -212,8 +213,7 @@ elif st.session_state.view == 'affiliate_register':
                 success, result = register_affiliate(name, email)
                 if success:
                     st.session_state.affiliate_id = result
-                    st.success("Registrierung erfolgreich!")
-                    time.sleep(1)  # Kurze Pause für die Benachrichtigung
+                    st.session_state.show_success = True
                     navigate_to('affiliate_dashboard')
                 else:
                     st.error(f"Fehler bei der Registrierung: {result}")
@@ -235,8 +235,7 @@ elif st.session_state.view == 'affiliate_login':
                 success, result = login_affiliate(email)
                 if success:
                     st.session_state.affiliate_id = result
-                    st.success("Anmeldung erfolgreich!")
-                    time.sleep(1)  # Kurze Pause für die Benachrichtigung
+                    st.session_state.show_success = True
                     navigate_to('affiliate_dashboard')
                 else:
                     st.error(result)
@@ -249,12 +248,17 @@ elif st.session_state.view == 'affiliate_login':
 elif st.session_state.view == 'affiliate_dashboard':
     if not st.session_state.affiliate_id:
         st.warning("Bitte melde dich zuerst an.")
-        time.sleep(1)
         navigate_to('affiliate_login')
     else:
         affiliate_data = get_affiliate_data(st.session_state.affiliate_id)
         
         if affiliate_data:
+            # Erfolgsmeldung anzeigen, falls vorhanden
+            if st.session_state.get('show_success', False):
+                st.success("Anmeldung erfolgreich!")
+                # Zurücksetzen, damit die Meldung beim nächsten Laden nicht mehr angezeigt wird
+                st.session_state.show_success = False
+            
             st.subheader(f"Affiliate Dashboard")
             st.write(f"Willkommen zurück, **{affiliate_data['name']}**!")
             
@@ -289,6 +293,14 @@ elif st.session_state.view == 'shop':
     st.subheader("Unser Shop")
     st.write("Hier ist unser Produkt - einfach auf den Button klicken, um es zu kaufen.")
     
+    # Erfolgsmeldung anzeigen
+    if st.session_state.get('purchase_success', False):
+        st.success("Vielen Dank für deinen Kauf! Die Provision wurde dem Affiliate gutgeschrieben.")
+        st.session_state.purchase_success = False
+    elif st.session_state.get('purchase_success_no_affiliate', False):
+        st.success("Vielen Dank für deinen Kauf!")
+        st.session_state.purchase_success_no_affiliate = False
+    
     # Platzhalter-Bild
     st.image("https://via.placeholder.com/400x300?text=Produktbild", caption="Super Artikel")
     
@@ -308,13 +320,15 @@ elif st.session_state.view == 'shop':
         if st.button("Jetzt kaufen"):
             success, result = register_purchase(affiliate_id)
             if success:
-                st.success("Vielen Dank für deinen Kauf! Die Provision wurde dem Affiliate gutgeschrieben.")
+                st.session_state.purchase_success = True
+                st.rerun()
             else:
                 st.error(f"Beim Kauf ist ein Fehler aufgetreten: {result}")
     else:
         st.warning("Kein Affiliate-Parameter gefunden. Der Kauf wird keinem Affiliate zugeordnet.")
         if st.button("Jetzt kaufen (ohne Affiliate)"):
-            st.success("Vielen Dank für deinen Kauf!")
+            st.session_state.purchase_success_no_affiliate = True
+            st.rerun()
     
     if st.button("Zurück zur Startseite"):
         navigate_to('home')
