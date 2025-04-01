@@ -152,12 +152,12 @@ def logout():
 st.title("Affiliate QR-System")
 
 # URL-Parameter für direkten Zugriff überprüfen
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 if "view" in query_params:
-    st.session_state.view = query_params["view"][0]
+    st.session_state.view = query_params["view"]
     # Wenn ein Affiliate-Parameter vorhanden ist, speichern
     if "ref" in query_params:
-        st.session_state.ref_affiliate_id = query_params["ref"][0]
+        st.session_state.ref_affiliate_id = query_params["ref"]
 
 # Seiten-Routing basierend auf Session State
 if st.session_state.view == 'home':
@@ -297,9 +297,9 @@ elif st.session_state.view == 'shop':
     
     # Affiliate-ID aus der URL oder Session State holen
     affiliate_id = None
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     if "ref" in query_params:
-        affiliate_id = query_params["ref"][0]
+        affiliate_id = query_params["ref"]
         st.session_state.ref_affiliate_id = affiliate_id
     elif "ref_affiliate_id" in st.session_state:
         affiliate_id = st.session_state.ref_affiliate_id
