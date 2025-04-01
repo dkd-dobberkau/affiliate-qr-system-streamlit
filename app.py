@@ -151,6 +151,14 @@ def logout():
 # Haupttitel
 st.title("Affiliate QR-System")
 
+# URL-Parameter für direkten Zugriff überprüfen
+query_params = st.experimental_get_query_params()
+if "view" in query_params:
+    st.session_state.view = query_params["view"][0]
+    # Wenn ein Affiliate-Parameter vorhanden ist, speichern
+    if "ref" in query_params:
+        st.session_state.ref_affiliate_id = query_params["ref"][0]
+
 # Seiten-Routing basierend auf Session State
 if st.session_state.view == 'home':
     st.subheader("Willkommen beim Affiliate QR-System")
@@ -254,11 +262,12 @@ elif st.session_state.view == 'affiliate_dashboard':
             st.write("Teile diesen QR-Code, damit Kunden deinen Affiliate-Link scannen können.")
             
             # QR-Code mit der Base-URL und Affiliate-ID generieren
-            base_url = "http://localhost:8501/shop"  # Für lokale Entwicklung
-            if 'STREAMLIT_BASE_URL' in os.environ:
-                base_url = os.environ['STREAMLIT_BASE_URL'] + '/shop'
+            # Konfigurierbare Base-URL für verschiedene Umgebungen
+            base_url = st.secrets.get("base_url", "http://localhost:8501")
+            # Füge /shop-Pfad hinzu oder verwende query parameter
+            shop_url = f"{base_url}/?view=shop"
             
-            qr_data = f"{base_url}?ref={st.session_state.affiliate_id}"
+            qr_data = f"{shop_url}&ref={st.session_state.affiliate_id}"
             qr_img = generate_qr_code(qr_data)
             
             st.image(qr_img, caption="Dein Affiliate QR-Code", width=300)
