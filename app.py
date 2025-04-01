@@ -268,6 +268,11 @@ elif st.session_state.view == 'affiliate_dashboard':
             # QR-Code mit der Base-URL und Affiliate-ID generieren
             # Konfigurierbare Base-URL für verschiedene Umgebungen
             base_url = st.secrets.get("base_url", "http://localhost:8501")
+            
+            # Stelle sicher, dass die URL das Schema (http:// oder https://) enthält
+            if not base_url.startswith("http://") and not base_url.startswith("https://"):
+                base_url = "https://" + base_url
+                
             # Füge /shop-Pfad hinzu oder verwende query parameter
             shop_url = f"{base_url}/?view=shop"
             
